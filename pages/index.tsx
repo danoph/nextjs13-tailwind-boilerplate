@@ -23,6 +23,8 @@ import {
   Squares2X2Icon as Squares2X2IconMini,
 } from '@heroicons/react/20/solid'
 
+import Uploads from '../components/Uploads';
+
 const navigation = [
   { name: 'Home', href: '#', icon: HomeIcon, current: false },
   { name: 'All Files', href: '#', icon: Squares2X2IconOutline, current: false },
@@ -441,6 +443,8 @@ export default function Example() {
                       </li>
                     ))}
                   </ul>
+
+                  <Uploads />
                 </section>
               </div>
             </main>
