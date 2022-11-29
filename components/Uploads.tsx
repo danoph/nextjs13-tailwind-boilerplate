@@ -1,6 +1,6 @@
 import { useState, useReducer } from 'react'
 import prettyBytes from 'pretty-bytes';
-import FileService from '../services/FileService';
+import ImageService from '../services/ImageService';
 
 //https://bezkoder.com/react-hooks-file-upload/
 
@@ -173,7 +173,7 @@ export default function Uploads() {
       });
     };
 
-    FileService.uploadFile(upload.file, onUploadProgress)
+    ImageService.uploadFile(upload.file, onUploadProgress)
       .then(onUploadComplete)
       .catch(onUploadError);
   };

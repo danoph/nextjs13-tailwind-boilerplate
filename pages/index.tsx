@@ -1,7 +1,7 @@
 import Head from 'next/head'
 import Image from 'next/image'
 
-import { Fragment, useState } from 'react'
+import { Fragment, useState, useEffect } from 'react'
 import { Dialog, Menu, Transition } from '@headlessui/react';
 import {
   Bars3BottomLeftIcon,
@@ -24,6 +24,7 @@ import {
 } from '@heroicons/react/20/solid'
 
 import Uploads from '../components/Uploads';
+import ImageService from '../services/ImageService';
 
 const navigation = [
   { name: 'Home', href: '#', icon: HomeIcon, current: false },
@@ -86,6 +87,24 @@ function classNames(...classes) {
 
 export default function Example() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  //useEffect(() => {
+    //const getImages = async () => {
+      //const images = await ImageService.getImages();
+      //console.log('images', images);
+    //};
+
+    //getImages();
+  //}, []);
+
+  //useEffect(() => {
+    //const getUploadUrl = async () => {
+      //const response = await ImageService.getUploadUrl('some_filename.png');
+      //console.log('response', response);
+    //};
+
+    //getUploadUrl();
+  //}, []);
 
   return (
     <>
