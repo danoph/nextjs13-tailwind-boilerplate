@@ -69,6 +69,26 @@ const ImageService = {
       onUploadProgress
     });
   },
+  //getImage: (filename) => {
+    //return api.post("/image", {
+      //filename: filename,
+    //},
+    //{
+      //headers: {
+        //"Accept": "application/json",
+      //},
+    //});
+  //},
+  getImageMetadata: (filename) => {
+    return api.post("/image_metadata", {
+      filename: filename,
+    },
+    {
+      headers: {
+        "Accept": "application/json",
+      },
+    });
+  },
   getImages: () => {
     return api.get("/images", {
       headers: {

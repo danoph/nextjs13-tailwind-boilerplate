@@ -1,6 +1,7 @@
-import { useState, useReducer } from 'react'
+import { useState, useEffect, useReducer } from 'react'
 import prettyBytes from 'pretty-bytes';
 import ImageService from '../services/ImageService';
+import { v4 as uuidv4 } from 'uuid';
 
 //https://bezkoder.com/react-hooks-file-upload/
 
@@ -23,7 +24,11 @@ const UploadProgressBar = props => {
     <div className="relative">
       <div className="overflow-hidden h-2 mt-4 text-xs flex rounded bg-gray-200">
         <div style={{ width: progress + "%" }}
-          className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-pink-500">
+          className={`${
+            progress < 100
+              ? 'bg-pink-500'
+              : 'bg-green-500'
+          } shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center`}>
         </div>
       </div>
     </div>
@@ -64,11 +69,37 @@ const UploadListItem = props => {
 
 //https://reactjs.org/docs/hooks-reference.html
 //const [state, dispatch] = useReducer(reducer, initialArg, init);
-const initialState = {
+type IStatus = 'QUEUED' | 'UPLOADING' | 'WAITING_FOR_THUMBNAIL' | 'FINISHED';
+
+const STATUSES = {
+  QUEUED: 'QUEUED',
+  UPLOADING: 'UPLOADING',
+  WAITING_FOR_THUMBNAIL: 'WAITING_FOR_THUMBNAIL',
+  FINISHED: 'FINISHED',
+}
+
+interface IUpload {
+  id: string;
+  file: File;
+  fileName: string;
+  progress: number;
+  status: IStatus;
+}
+
+interface IState {
+  uploads: IUpload[];
+}
+
+const initialState: IState = {
   uploads: []
 };
 
-const reducer = (state, action) => {
+interface IAction {
+  type: string;
+  [key: string]: any;
+}
+
+const reducer = (state: IState, action: IAction) => {
   switch (action.type) {
     case 'UPDATE_FILE_PROGRESS':
       return {
@@ -76,6 +107,33 @@ const reducer = (state, action) => {
         uploads: state.uploads.map(
           upload => upload.file.name === action.fileName
           ? { ...upload, progress: action.progress }
+          : upload
+        )
+      };
+    case 'UPLOAD_STARTED':
+      return {
+        ...state,
+        uploads: state.uploads.map(
+          upload => upload.file.name === action.fileName
+          ? { ...upload, status: STATUSES.UPLOADING }
+          : upload
+        )
+      };
+    case 'WAITING_FOR_THUMBNAIL':
+      return {
+        ...state,
+        uploads: state.uploads.map(
+          upload => upload.file.name === action.fileName
+          ? { ...upload, status: STATUSES.WAITING_FOR_THUMBNAIL }
+          : upload
+        )
+      };
+    case 'UPLOAD_FINISHED':
+      return {
+        ...state,
+        uploads: state.uploads.map(
+          upload => upload.file.name === action.fileName
+          ? { ...upload, status: STATUSES.FINISHED }
           : upload
         )
       };
@@ -104,10 +162,11 @@ export default function Uploads({ onUploadComplete }) {
 
     const newUploads = [ ...files ].filter(file => !existingFilenames.includes(file.name))
       .map(file => ({
+        id: uuidv4(),
         file,
         fileName: file.name,
-        //uuid: createUuid(),
-        progress: 0
+        progress: 0,
+        status: STATUSES.QUEUED,
       }));
 
     dispatch({
@@ -149,7 +208,14 @@ export default function Uploads({ onUploadComplete }) {
   const uploadClicked = e => {
     e.preventDefault();
 
-    state.uploads.forEach(upload => {
+    state.uploads
+      .filter(upload => upload.status === STATUSES.QUEUED)
+      .forEach(upload => {
+      dispatch({
+        type: 'UPLOAD_STARTED',
+        fileName: upload.file.name,
+      });
+
       uploadFile(upload);
     });
   };
@@ -174,9 +240,43 @@ export default function Uploads({ onUploadComplete }) {
     };
 
     ImageService.uploadFile(upload.file, onUploadProgress)
-      .then(() => onUploadComplete(upload.file))
+      .then(() => {
+        dispatch({
+          type: 'WAITING_FOR_THUMBNAIL',
+          fileName: upload.file.name,
+        });
+
+        //onUploadComplete(upload.file);
+      })
       .catch(onUploadError);
   };
+
+  useEffect(() => {
+    const isFileFinished = async filename => {
+      console.log('filename', filename);
+      const response = await ImageService.getImageMetadata(filename);
+      const data = response.data;
+      console.log('is finished response', response);
+
+      if (data.ContentLength > 0) {
+        dispatch({
+          type: 'UPLOAD_FINISHED',
+          fileName: filename
+        });
+        onUploadComplete(filename, data);
+      }
+    };
+
+    const interval = setInterval(async () => {
+      const pending = state.uploads.filter(upload => upload.status === 'WAITING_FOR_THUMBNAIL');
+
+      await Promise.all(pending.map(upload => {
+        isFileFinished(upload.file.name);
+      }));
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [state.uploads]);
 
   const clearClicked = e => {
     e.preventDefault();

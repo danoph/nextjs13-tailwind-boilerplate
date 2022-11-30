@@ -125,20 +125,20 @@ export default function Example() {
   useEffect(() => {
   }, [currentImage]);
 
-  const onUploadComplete = upload => {
-    //setImages(state => [
-      //...state,
-      //{
-        //Key: upload.name,
-        //Size: upload.size,
-        //source: `${CLOUDFRONT_URL}/${upload.name}`,
-        //current: false,
-        //Owner: {
-          //DisplayName: 'someone',
-        //}
-      //},
-    //]);
-    console.log('upload complete', upload);
+  const onUploadComplete = (filename, metadata) => {
+    //console.log('upload', upload, metadata);
+    setImages(state => [
+      ...state,
+      {
+        Key: filename,
+        Size: metadata.ContentLength,
+        source: `${CLOUDFRONT_URL}/${filename}`,
+        current: false,
+        Owner: {
+          DisplayName: 'someone',
+        }
+      },
+    ]);
   };
 
   //useEffect(() => {
