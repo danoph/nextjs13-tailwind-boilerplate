@@ -114,8 +114,16 @@ export default function Example() {
   }, [images]);
 
   const imageClicked = image => {
-    setCurrentImage(image);
+    if (currentImage?.Key === image.Key) {
+      setCurrentImage(null);
+    } else {
+      //setImages(state => state.map(img => img.Key === image.Key ? { ...img, current: !img.current } : { ...img, current: false }));
+      setCurrentImage(image);
+    }
   };
+
+  useEffect(() => {
+  }, [currentImage]);
 
   const onUploadComplete = upload => {
     //setImages(state => [
