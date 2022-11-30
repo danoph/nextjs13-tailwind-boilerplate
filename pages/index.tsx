@@ -117,6 +117,22 @@ export default function Example() {
     setCurrentImage(image);
   };
 
+  const onUploadComplete = upload => {
+    //setImages(state => [
+      //...state,
+      //{
+        //Key: upload.name,
+        //Size: upload.size,
+        //source: `${CLOUDFRONT_URL}/${upload.name}`,
+        //current: false,
+        //Owner: {
+          //DisplayName: 'someone',
+        //}
+      //},
+    //]);
+    console.log('upload complete', upload);
+  };
+
   //useEffect(() => {
     //const getUploadUrl = async () => {
       //const response = await ImageService.getUploadUrl('some_filename.png');
@@ -483,7 +499,7 @@ export default function Example() {
                     ))}
                   </ul>
 
-                  <Uploads />
+                  <Uploads onUploadComplete={onUploadComplete} />
                 </section>
               </div>
             </main>

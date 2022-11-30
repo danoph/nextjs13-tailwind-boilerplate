@@ -94,7 +94,7 @@ const reducer = (state, action) => {
   }
 }
 
-export default function Uploads() {
+export default function Uploads({ onUploadComplete }) {
   const [draggingOver, setDraggingOver] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [state, dispatch] = useReducer(reducer, initialState);
@@ -155,9 +155,9 @@ export default function Uploads() {
   };
 
   const uploadFile = (upload) => {
-    const onUploadComplete = response => {
-      console.log('response', response);
-    };
+    //const onUploadComplete = response => {
+      //console.log('response', response);
+    //};
 
     const onUploadError = error => {
       console.log('error', error);
@@ -174,7 +174,7 @@ export default function Uploads() {
     };
 
     ImageService.uploadFile(upload.file, onUploadProgress)
-      .then(onUploadComplete)
+      .then(() => onUploadComplete(upload.file))
       .catch(onUploadError);
   };
 
