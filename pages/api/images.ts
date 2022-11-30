@@ -36,7 +36,9 @@ export default async function handler(
   res: NextApiResponse<any>
 ) {
 
-  const { Contents: images } = await getImages();
+  const response = await getImages();
+
+  const images = response?.Contents || [];
 
   //const image1 = {
     //id: 1,
