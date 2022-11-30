@@ -79,6 +79,66 @@ const ImageService = {
       //},
     //});
   //},
+  abortMultipartUpload: (key, uploadId) => {
+    return api.post("/abort_multipart_upload", {
+      key,
+      uploadId,
+    },
+    {
+      headers: {
+        "Accept": "application/json",
+      },
+    });
+  },
+  finishMultipartUpload: (key, uploadId, parts) => {
+    return api.post("/finish_multipart_upload", {
+      key,
+      uploadId,
+      parts,
+    },
+    {
+      headers: {
+        "Accept": "application/json",
+      },
+    });
+  },
+  listMultipartUploads: () => {
+    return api.get("/list_multipart_uploads",
+    {
+      headers: {
+        "Accept": "application/json",
+      },
+    });
+  },
+  listMultipartUploadParts: (key, uploadId) => {
+    return api.post("/list_multipart_upload_parts", {
+      key,
+      uploadId,
+    },
+    {
+      headers: {
+        "Accept": "application/json",
+      },
+    });
+  },
+  startMultipartUpload: (filename) => {
+    return api.post("/multipart_upload", {
+      filename: filename,
+    },
+    {
+      headers: {
+        "Accept": "application/json",
+      },
+    });
+  },
+  getMultipartUploadUrls: (data) => {
+    return api.post("/multipart_upload_url", data,
+    {
+      headers: {
+        "Accept": "application/json",
+      },
+    });
+  },
   getImageMetadata: (filename) => {
     return api.post("/image_metadata", {
       filename: filename,
