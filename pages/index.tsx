@@ -1,5 +1,6 @@
 import Head from 'next/head'
 import Image from 'next/image'
+import prettyBytes from 'pretty-bytes';
 
 import { Fragment, useState, useEffect } from 'react'
 import { Dialog, Menu, Transition } from '@headlessui/react';
@@ -26,6 +27,8 @@ import {
 import Uploads from '../components/Uploads';
 import ImageService from '../services/ImageService';
 
+const CLOUDFRONT_URL = 'https://dfgeq0nk1hrwc.cloudfront.net';
+
 const navigation = [
   { name: 'Home', href: '#', icon: HomeIcon, current: false },
   { name: 'All Files', href: '#', icon: Squares2X2IconOutline, current: false },
@@ -45,11 +48,11 @@ const tabs = [
 ]
 const files = [
   {
-    name: 'IMG_4985.HEIC',
-    size: '3.9 MB',
+    Key: 'IMG_4985.HEIC',
+    Size: '3.9 MB',
     source:
       'https://images.unsplash.com/photo-1582053433976-25c00369fc93?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=512&q=80',
-    current: true,
+    //current: true,
   },
   // More files...
 ]
@@ -87,15 +90,32 @@ function classNames(...classes) {
 
 export default function Example() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [images, setImages] = useState([]);
+  const [currentImage, setCurrentImage] = useState(null);
 
-  //useEffect(() => {
-    //const getImages = async () => {
-      //const images = await ImageService.getImages();
-      //console.log('images', images);
-    //};
+  useEffect(() => {
+    const getImages = async () => {
+      const response = await ImageService.getImages();
+      const img = response.data.map(image => ({
+        ...image,
+        source: `${CLOUDFRONT_URL}/${image.Key}`,
+        current: false,
+      }));
+      setImages(img);
+      //setCurrentImage(img[0]);
+    };
 
-    //getImages();
-  //}, []);
+    console.log('getting images!');
+    getImages();
+  }, []);
+
+  useEffect(() => {
+    console.log('images:', images);
+  }, [images]);
+
+  const imageClicked = image => {
+    setCurrentImage(image);
+  };
 
   //useEffect(() => {
     //const getUploadUrl = async () => {
@@ -433,32 +453,32 @@ export default function Example() {
                     role="list"
                     className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-6 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-8"
                   >
-                    {files.map((file) => (
-                      <li key={file.name} className="relative">
+                    {images.map(image => (
+                      <li key={image.Key} className="relative" onClick={() => imageClicked(image)}>
                         <div
                           className={classNames(
-                            file.current
+                            image.current
                               ? 'ring-2 ring-offset-2 ring-indigo-500'
                               : 'focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-offset-gray-100 focus-within:ring-indigo-500',
                             'group block w-full aspect-w-10 aspect-h-7 rounded-lg bg-gray-100 overflow-hidden'
                           )}
                         >
                           <img
-                            src={file.source}
+                            src={image.source}
                             alt=""
                             className={classNames(
-                              file.current ? '' : 'group-hover:opacity-75',
+                              image.current ? '' : 'group-hover:opacity-75',
                               'object-cover pointer-events-none'
                             )}
                           />
                           <button type="button" className="absolute inset-0 focus:outline-none">
-                            <span className="sr-only">View details for {file.name}</span>
+                            <span className="sr-only">View details for {image.Key}</span>
                           </button>
                         </div>
                         <p className="pointer-events-none mt-2 block truncate text-sm font-medium text-gray-900">
-                          {file.name}
+                          {image.Key}
                         </p>
-                        <p className="pointer-events-none block text-sm font-medium text-gray-500">{file.size}</p>
+                        <p className="pointer-events-none block text-sm font-medium text-gray-500">{prettyBytes(image.Size)}</p>
                       </li>
                     ))}
                   </ul>
@@ -469,19 +489,20 @@ export default function Example() {
             </main>
 
             {/* Details sidebar */}
+          {currentImage && (
             <aside className="hidden w-96 overflow-y-auto border-l border-gray-200 bg-white p-8 lg:block">
               <div className="space-y-6 pb-16">
                 <div>
                   <div className="aspect-w-10 aspect-h-7 block w-full overflow-hidden rounded-lg">
-                    <img src={currentFile.source} alt="" className="object-cover" />
+                    <img src={currentImage.source} alt="" className="object-cover" />
                   </div>
                   <div className="mt-4 flex items-start justify-between">
                     <div>
                       <h2 className="text-lg font-medium text-gray-900">
                         <span className="sr-only">Details for </span>
-                        {currentFile.name}
+                        {currentImage.Key}
                       </h2>
-                      <p className="text-sm font-medium text-gray-500">{currentFile.size}</p>
+                      <p className="text-sm font-medium text-gray-500">{currentImage.Size}</p>
                     </div>
                     <button
                       type="button"
@@ -495,12 +516,18 @@ export default function Example() {
                 <div>
                   <h3 className="font-medium text-gray-900">Information</h3>
                   <dl className="mt-2 divide-y divide-gray-200 border-t border-b border-gray-200">
-                    {Object.keys(currentFile.information).map((key) => (
-                      <div key={key} className="flex justify-between py-3 text-sm font-medium">
-                        <dt className="text-gray-500">{key}</dt>
-                        <dd className="whitespace-nowrap text-gray-900">{currentFile.information[key]}</dd>
-                      </div>
-                    ))}
+                    <div className="flex justify-between py-3 text-sm font-medium">
+                      <dt className="text-gray-500">Uploaded By</dt>
+                      <dd className="whitespace-nowrap text-gray-900">{currentImage.Owner.DisplayName}</dd>
+                    </div>
+                    <div className="flex justify-between py-3 text-sm font-medium">
+                      <dt className="text-gray-500">Last Modified</dt>
+                      <dd className="whitespace-nowrap text-gray-900">{currentImage.LastModified}</dd>
+                    </div>
+                    <div className="flex justify-between py-3 text-sm font-medium">
+                      <dt className="text-gray-500">Size</dt>
+                      <dd className="whitespace-nowrap text-gray-900">{prettyBytes(currentImage.Size)}</dd>
+                    </div>
                   </dl>
                 </div>
                 <div>
@@ -564,6 +591,7 @@ export default function Example() {
                 </div>
               </div>
             </aside>
+          )}
           </div>
         </div>
       </div>
