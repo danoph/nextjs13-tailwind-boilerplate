@@ -76,24 +76,29 @@ export class Uploader {
       this.fileKey = AWSFileDataOutput.fileKey
 
       // retrieving the pre-signed URLs
-      const numberOfparts = Math.ceil(this.file.size / this.chunkSize)
+      const numberOfParts = Math.ceil(this.file.size / this.chunkSize)
 
-      const AWSMultipartFileDataInput = {
-        fileId: this.fileId,
-        fileKey: this.fileKey,
-        parts: numberOfparts,
-      }
+      //const AWSMultipartFileDataInput = {
+        //fileId: this.fileId,
+        //fileKey: this.fileKey,
+        //parts: numberOfparts,
+      //}
 
-      const urlsResponse = await api.request({
-        url: "/multipart_upload_url",
-        method: "POST",
-        data: AWSMultipartFileDataInput,
-      })
+      //const urlsResponse = await api.request({
+        //url: "/multipart_upload_url",
+        //method: "POST",
+        //data: AWSMultipartFileDataInput,
+      //})
 
-      console.log('urlsResponse', urlsResponse);
+      //console.log('urlsResponse', urlsResponse);
 
-      const newParts = urlsResponse.data.parts
-      this.parts.push(...newParts)
+      //const newParts = urlsResponse.data.parts
+      //this.parts.push(...newParts)
+      this.parts.push(
+        ...[...Array(numberOfParts).keys()].map((val, index) => ({
+          PartNumber: index + 1
+        }))
+      );
 
       this.sendNext()
     } catch (error) {
@@ -110,9 +115,9 @@ export class Uploader {
     }
 
     console.log('this.parts.length', this.parts.length);
+
     if (!this.parts.length) {
       if (!activeConnections) {
-        console.log('completing successfully');
         this.complete()
       }
 
@@ -136,8 +141,6 @@ export class Uploader {
         })
         .catch((error) => {
           this.parts.push(part)
-
-          console.log('completing with error3', error);
           this.complete(error)
         })
     }
@@ -229,69 +232,23 @@ export class Uploader {
     }
   }
 
-  //upload(file, part, sendChunkStarted) {
-    //return new Promise((resolve, reject) => {
-      //const http = axios.create();
-
-      //const putFile = async () => {
-        //delete http.defaults.headers.put['Content-Type']
-
-        //const response = await http.put(part.signedUrl, file, {
-          //headers: {
-            //'ETag': ''
-          //}
-        //})
-        //console.log('response', response);
-
-        //const uploadedPart = {
-          //PartNumber: part.PartNumber,
-          //// removing the " enclosing carachters from
-          //// the raw ETag
-          ////ETag: ETag.replaceAll('"', ""),
-        //}
-
-        //console.log('pushing uploaded part', this.uploadedParts);
-        //this.uploadedParts.push(uploadedPart)
-
-        //console.log('resolving xhr');
-        //resolve(response.status)
-        //delete this.activeConnections[part.PartNumber - 1]
-      //};
-
-      //putFile();
-      //sendChunkStarted()
-
-    ////const keys = Object.keys(urls)
-    ////const promises = []
-
-    ////for (const indexStr of keys) {
-      ////const index = parseInt(indexStr)
-      ////const start = index * FILE_CHUNK_SIZE
-      ////const end = (index + 1) * FILE_CHUNK_SIZE
-      ////const blob = index < keys.length
-        ////? file.slice(start, end)
-        ////: file.slice(start)
-
-        ////promises.push(http.put(urls[index], blob))
-    ////}
-
-    ////const resParts = await Promise.all(promises)
-    //sendChunkStarted()
-
-    ////console.log('resParts', resParts);
-
-    ////return resParts.map((part, index) => ({
-      ////ETag: (part as any).headers.etag,
-      ////PartNumber: index + 1
-    ////}))
-    //});
-  //}
-
   // uploading a part through its pre-signed URL
   upload(file, part, sendChunkStarted) {
     // uploading each part with its pre-signed URL
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       if (this.fileId && this.fileKey) {
+        const AWSMultipartFileDataInput = {
+          fileId: this.fileId,
+          fileKey: this.fileKey,
+          partNumber: part.PartNumber,
+        }
+
+        const { data: { signedUrl } } = await api.request({
+          url: "/multipart_upload_part_url",
+          method: "POST",
+          data: AWSMultipartFileDataInput,
+        })
+
         // - 1 because PartNumber is an index starting from 1 and not 0
         const xhr = (this.activeConnections[part.PartNumber - 1] = new XMLHttpRequest())
 
@@ -305,44 +262,12 @@ export class Uploader {
         xhr.addEventListener("abort", progressListener)
         xhr.addEventListener("loadend", progressListener)
 
-        xhr.open("PUT", part.signedUrl)
+        xhr.open("PUT", signedUrl)
 
         xhr.onreadystatechange = () => {
-          if (xhr.readyState === 2) {
-
-            // Get the raw header string
-            const headers = xhr.getAllResponseHeaders();
-
-            // Convert the header string into an array
-            // of individual headers
-            const arr = headers.trim().split(/[\r\n]+/);
-
-            // Create a map of header names to values
-            const headerMap = {};
-            arr.forEach((line) => {
-              const parts = line.split(': ');
-              const header = parts.shift();
-              const value = parts.join(': ');
-              headerMap[header] = value;
-            });
-            console.log('headerMap', headerMap);
-          }
-          console.log('ready state change');
-          console.log('xhr.readyState', xhr.readyState);
-
-          if (xhr.readyState === 2) {
-            console.log('HEADERS', xhr.getAllResponseHeaders());
-          }
-
           if (xhr.readyState === 4 && xhr.status === 200) {
-            console.log('xhr.response', xhr.response);
-            console.log('xhr', xhr);
-
-            const allHeaders = xhr.getAllResponseHeaders()
-            console.log('all headers', allHeaders);
             // retrieving the ETag parameter from the HTTP headers
             const ETag = xhr.getResponseHeader("etag")
-            console.log('ETag', ETag);
 
             if (ETag) {
               const uploadedPart = {
@@ -352,20 +277,14 @@ export class Uploader {
                 ETag: ETag.replaceAll('"', ""),
               }
 
-              console.log('pushing uploaded part', this.uploadedParts);
+              console.log('uploadedParts.length', this.uploadedParts.length);
               this.uploadedParts.push(uploadedPart)
 
-              console.log('resolving xhr');
               resolve(xhr.status)
               delete this.activeConnections[part.PartNumber - 1]
             }
-            console.log('didnt find etag');
           }
         }
-
-        xhr.onload = () => {
-          console.log('on load', xhr.readyState, xhr.getAllResponseHeaders());
-        };
 
         xhr.onerror = (error) => {
           console.log('xhr error', error);
@@ -379,7 +298,6 @@ export class Uploader {
           delete this.activeConnections[part.PartNumber - 1]
         }
 
-        console.log('sending file');
         xhr.send(file)
       }
     })

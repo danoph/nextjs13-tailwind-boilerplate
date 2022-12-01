@@ -26,7 +26,7 @@ export default async function getMultipartPreSignedUrls(req, res) {
     PartNumber: partNumber,
   });
 
-  const signedUrl = getSignedUrl(client, command, {
+  const signedUrl = await getSignedUrl(client, command, {
     expiresIn: 3600,
   });
 
