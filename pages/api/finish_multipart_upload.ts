@@ -14,7 +14,7 @@ const client = new S3Client({ region: REGION });
 
 export default async function finalizeMultipartUpload(req, res) {
   console.log('finishing multipart upload');
-  const { uploadId, key, parts } = JSON.parse(req.body)
+  const { uploadId, key, parts } = req.body;
   console.log(req.body);
 
   const multipartParams = {

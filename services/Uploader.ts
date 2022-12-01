@@ -168,8 +168,8 @@ export class Uploader {
   async sendCompleteRequest() {
     if (this.fileId && this.fileKey) {
       const videoFinalizationMultiPartInput = {
-        fileId: this.fileId,
-        fileKey: this.fileKey,
+        uploadId: this.fileId,
+        key: this.fileKey,
         parts: this.uploadedParts,
       }
 
@@ -200,7 +200,7 @@ export class Uploader {
 
   // calculating the current progress of the multipart upload request
   handleProgress(part, event) {
-    console.log('part', part, 'event', event);
+    //console.log('part', part, 'event', event);
     if (this.file) {
       if (event.type === "progress" || event.type === "error" || event.type === "abort") {
         this.progressCache[part] = event.loaded

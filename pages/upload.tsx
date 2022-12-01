@@ -162,18 +162,18 @@ export default function Example() {
 
   useEffect(() => {
     const completeUpload = async (upload) => {
-      //const completeResponse = await ImageService.finishMultipartUpload(
-        //upload.Key,
-        //upload.UploadId,
-        //upload.Parts,
-      //);
+      const completeResponse = await ImageService.finishMultipartUpload(
+        upload.Key,
+        upload.UploadId,
+        upload.Parts,
+      );
     };
 
     const getUploadParts = async (upload) => {
       const response = await ImageService.listMultipartUploadParts(upload.Key, upload.UploadId);
       console.log('upload parts', response);
 
-      completeUpload(response.data);
+      //completeUpload(response.data);
     };
 
     const abortMultipartUpload = async (upload) => {
@@ -190,7 +190,7 @@ export default function Example() {
         //abortMultipartUpload(upload);
       //});
 
-      //getUploadParts(uploads[1]);
+      getUploadParts(uploads[0]);
       //console.log('response', response);
     };
 
