@@ -154,6 +154,7 @@ export default function Example() {
 
     const uploader = new Uploader(videoUploaderOptions)
     setUploader(uploader)
+    setUploadProgress(0);
 
     uploader
     .onProgress(({ percentage: newPercentage }) => {
