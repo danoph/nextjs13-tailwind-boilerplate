@@ -17,7 +17,7 @@ import { v4 as uuidv4 } from 'uuid';
   //return uuid;
 //}
 
-const UploadProgressBar = props => {
+export const UploadProgressBar = props => {
   const { progress } = props;
 
   return (

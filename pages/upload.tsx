@@ -2,6 +2,7 @@ import Head from 'next/head'
 import Image from 'next/image'
 import prettyBytes from 'pretty-bytes';
 import { Uploader } from "../services/Uploader";
+import { UploadProgressBar } from '../components/Uploads';
 
 import { Fragment, useState, useEffect } from 'react'
 import { Dialog, Menu, Transition } from '@headlessui/react';
@@ -89,63 +90,6 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
 }
 
-//export default function App() {
-  //const [file, setFile] = useState(undefined)
-  //const [uploader, setUploader] = useState(undefined)
-
-  //useEffect(() => {
-    //if (file) {
-      //let percentage = undefined
-
-     //const videoUploaderOptions = {
-        //fileName: "foo",
-        //file: file,
-      //}
-      //const uploader = new Uploader(videoUploaderOptions)
-      //setUploader(uploader)
-
-      //uploader
-        //.onProgress(({ percentage: newPercentage }) => {
-          //// to avoid the same percentage to be logged twice
-          //if (newPercentage !== percentage) {
-            //percentage = newPercentage
-            //console.log(`${percentage}%`)
-          //}
-        //})
-        //.onError((error) => {
-          //setFile(undefined)
-          //console.error(error)
-        //})
-
-      //uploader.start()
-    //}
-  //}, [file])
-
-  //const onCancel = () => {
-    //if (uploader) {
-      //uploader.abort()
-      //setFile(undefined)
-    //}
-  //}
-
-  //return (
-    //<div className="App">
-      //<h1>Upload your file</h1>
-      //<div>
-        //<input
-          //type="file"
-          //onChange={(e) => {
-            //setFile(e.target?.files?.[0])
-          //}}
-        ///>
-      //</div>
-      //<div>
-        //<button onClick={onCancel}>Cancel</button>
-      //</div>
-    //</div>
-  //)
-//}
-
 export default function Example() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [images, setImages] = useState([]);
@@ -153,6 +97,7 @@ export default function Example() {
   const [inputValue, setInputValue] = useState("");
   const [file, setFile] = useState(undefined)
   const [uploader, setUploader] = useState(undefined)
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const fileAdded = e => {
     const files = [ ...e.target.files ];
@@ -202,137 +147,29 @@ export default function Example() {
 
     console.log('upload clicked', file);
 
-    //const getUploadUrls = async () => {
-      //const fileId = "FDhUkMr8GQX8MkEQADI9mPdJZ_ee9wU_phoXDq2ZkoHevN1pU5aQvJIzTYhFJO6imi8xYhBJzH.qtWEyWrc8QY4r8DaWs4BJs4VbYHHr9AXeUqZIEKAN4EnHpPYFgc_s";
-      //const fileKey = "MediumTestFile"
+    const videoUploaderOptions = {
+      fileName: file.name,
+      file: file,
+    }
 
-      //const chunkSize = 1024 * 1024 * 5;
+    const uploader = new Uploader(videoUploaderOptions)
+    setUploader(uploader)
 
-      //const numberOfParts = Math.ceil(file.size / chunkSize);
-      ////ImageService.startMultipartUpload(file.name);
-      //const response = await ImageService.getMultipartUploadUrls({
-        //fileId,
-        //fileKey,
-        //parts: numberOfParts
-      //});
-
-      //console.log('response', response);
-    //};
-
-    //getUploadUrls();
-
-    //const uploadUrls = [
-      //{
-        //"signedUrl": "https://danoph-image-resizer.s3.us-east-1.amazonaws.com/MediumTestFile?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAUB7YTG2OKMURE6FP%2F20221130%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20221130T213248Z&X-Amz-Expires=3600&X-Amz-Signature=9775b397c385832731bfc4e739562f3c3077bf8f42b50821bad914b61161bca9&X-Amz-SignedHeaders=host&partNumber=1&uploadId=FDhUkMr8GQX8MkEQADI9mPdJZ_ee9wU_phoXDq2ZkoHevN1pU5aQvJIzTYhFJO6imi8xYhBJzH.qtWEyWrc8QY4r8DaWs4BJs4VbYHHr9AXeUqZIEKAN4EnHpPYFgc_s&x-id=UploadPart",
-        //"PartNumber": 1
-      //},
-      //{
-        //"signedUrl": "https://danoph-image-resizer.s3.us-east-1.amazonaws.com/MediumTestFile?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAUB7YTG2OKMURE6FP%2F20221130%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20221130T213248Z&X-Amz-Expires=3600&X-Amz-Signature=9ec3aa33f634279a24bef4d4cab3e1a5a1f6a11b1baedc27d68cd849bc1757e4&X-Amz-SignedHeaders=host&partNumber=2&uploadId=FDhUkMr8GQX8MkEQADI9mPdJZ_ee9wU_phoXDq2ZkoHevN1pU5aQvJIzTYhFJO6imi8xYhBJzH.qtWEyWrc8QY4r8DaWs4BJs4VbYHHr9AXeUqZIEKAN4EnHpPYFgc_s&x-id=UploadPart",
-        //"PartNumber": 2
-      //},
-      //{
-        //"signedUrl": "https://danoph-image-resizer.s3.us-east-1.amazonaws.com/MediumTestFile?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAUB7YTG2OKMURE6FP%2F20221130%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20221130T213248Z&X-Amz-Expires=3600&X-Amz-Signature=a032141496b59905b72cf06f87ee12c758363169b01693d0cfaabaa0bf20d907&X-Amz-SignedHeaders=host&partNumber=3&uploadId=FDhUkMr8GQX8MkEQADI9mPdJZ_ee9wU_phoXDq2ZkoHevN1pU5aQvJIzTYhFJO6imi8xYhBJzH.qtWEyWrc8QY4r8DaWs4BJs4VbYHHr9AXeUqZIEKAN4EnHpPYFgc_s&x-id=UploadPart",
-        //"PartNumber": 3
-      //},
-      //{
-        //"signedUrl": "https://danoph-image-resizer.s3.us-east-1.amazonaws.com/MediumTestFile?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAUB7YTG2OKMURE6FP%2F20221130%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20221130T213248Z&X-Amz-Expires=3600&X-Amz-Signature=b91bfa164069eb4d3a3aff4f9e860773f5aadab186e03904c44e499021ad7b72&X-Amz-SignedHeaders=host&partNumber=4&uploadId=FDhUkMr8GQX8MkEQADI9mPdJZ_ee9wU_phoXDq2ZkoHevN1pU5aQvJIzTYhFJO6imi8xYhBJzH.qtWEyWrc8QY4r8DaWs4BJs4VbYHHr9AXeUqZIEKAN4EnHpPYFgc_s&x-id=UploadPart",
-        //"PartNumber": 4
-      //},
-      //{
-        //"signedUrl": "https://danoph-image-resizer.s3.us-east-1.amazonaws.com/MediumTestFile?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAUB7YTG2OKMURE6FP%2F20221130%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20221130T213248Z&X-Amz-Expires=3600&X-Amz-Signature=6ede362cdce2dc818182a6795f3812dc797118fe6b20cf97f8b2f267137bd7cc&X-Amz-SignedHeaders=host&partNumber=5&uploadId=FDhUkMr8GQX8MkEQADI9mPdJZ_ee9wU_phoXDq2ZkoHevN1pU5aQvJIzTYhFJO6imi8xYhBJzH.qtWEyWrc8QY4r8DaWs4BJs4VbYHHr9AXeUqZIEKAN4EnHpPYFgc_s&x-id=UploadPart",
-        //"PartNumber": 5
-      //},
-      //{
-        //"signedUrl": "https://danoph-image-resizer.s3.us-east-1.amazonaws.com/MediumTestFile?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAUB7YTG2OKMURE6FP%2F20221130%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20221130T213248Z&X-Amz-Expires=3600&X-Amz-Signature=7741a45e01d9fcd1bb30ff700e595c78cf801323aca1d06ba5c6da03c41a60da&X-Amz-SignedHeaders=host&partNumber=6&uploadId=FDhUkMr8GQX8MkEQADI9mPdJZ_ee9wU_phoXDq2ZkoHevN1pU5aQvJIzTYhFJO6imi8xYhBJzH.qtWEyWrc8QY4r8DaWs4BJs4VbYHHr9AXeUqZIEKAN4EnHpPYFgc_s&x-id=UploadPart",
-        //"PartNumber": 6
-      //},
-      //{
-        //"signedUrl": "https://danoph-image-resizer.s3.us-east-1.amazonaws.com/MediumTestFile?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAUB7YTG2OKMURE6FP%2F20221130%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20221130T213248Z&X-Amz-Expires=3600&X-Amz-Signature=bc7d7d1784693a0447773c59540bff000b96ad5d8654bb25b08a8f881ee6cd5c&X-Amz-SignedHeaders=host&partNumber=7&uploadId=FDhUkMr8GQX8MkEQADI9mPdJZ_ee9wU_phoXDq2ZkoHevN1pU5aQvJIzTYhFJO6imi8xYhBJzH.qtWEyWrc8QY4r8DaWs4BJs4VbYHHr9AXeUqZIEKAN4EnHpPYFgc_s&x-id=UploadPart",
-        //"PartNumber": 7
-      //},
-      //{
-        //"signedUrl": "https://danoph-image-resizer.s3.us-east-1.amazonaws.com/MediumTestFile?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAUB7YTG2OKMURE6FP%2F20221130%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20221130T213248Z&X-Amz-Expires=3600&X-Amz-Signature=aa1fe6e45fe687aa7246e99a70de113345a4997670f85d29eb53f691ec42f3cf&X-Amz-SignedHeaders=host&partNumber=8&uploadId=FDhUkMr8GQX8MkEQADI9mPdJZ_ee9wU_phoXDq2ZkoHevN1pU5aQvJIzTYhFJO6imi8xYhBJzH.qtWEyWrc8QY4r8DaWs4BJs4VbYHHr9AXeUqZIEKAN4EnHpPYFgc_s&x-id=UploadPart",
-        //"PartNumber": 8
-      //},
-      //{
-        //"signedUrl": "https://danoph-image-resizer.s3.us-east-1.amazonaws.com/MediumTestFile?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAUB7YTG2OKMURE6FP%2F20221130%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20221130T213248Z&X-Amz-Expires=3600&X-Amz-Signature=0f69ae8c73a6d38d7a4bd94329ff399e991c704c1d4984cc088ffc485b59a705&X-Amz-SignedHeaders=host&partNumber=9&uploadId=FDhUkMr8GQX8MkEQADI9mPdJZ_ee9wU_phoXDq2ZkoHevN1pU5aQvJIzTYhFJO6imi8xYhBJzH.qtWEyWrc8QY4r8DaWs4BJs4VbYHHr9AXeUqZIEKAN4EnHpPYFgc_s&x-id=UploadPart",
-        //"PartNumber": 9
-      //},
-      //{
-        //"signedUrl": "https://danoph-image-resizer.s3.us-east-1.amazonaws.com/MediumTestFile?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAUB7YTG2OKMURE6FP%2F20221130%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20221130T213248Z&X-Amz-Expires=3600&X-Amz-Signature=b542b9235024648c3be89d57e6583a549bd42467ad8676e90dc0b7fc6df51346&X-Amz-SignedHeaders=host&partNumber=10&uploadId=FDhUkMr8GQX8MkEQADI9mPdJZ_ee9wU_phoXDq2ZkoHevN1pU5aQvJIzTYhFJO6imi8xYhBJzH.qtWEyWrc8QY4r8DaWs4BJs4VbYHHr9AXeUqZIEKAN4EnHpPYFgc_s&x-id=UploadPart",
-        //"PartNumber": 10
-      //},
-      //{
-        //"signedUrl": "https://danoph-image-resizer.s3.us-east-1.amazonaws.com/MediumTestFile?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAUB7YTG2OKMURE6FP%2F20221130%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20221130T213248Z&X-Amz-Expires=3600&X-Amz-Signature=64c10fe33ed61a29b66e81863d4c4dce20843ee53e9b5110eb6079256f9db993&X-Amz-SignedHeaders=host&partNumber=11&uploadId=FDhUkMr8GQX8MkEQADI9mPdJZ_ee9wU_phoXDq2ZkoHevN1pU5aQvJIzTYhFJO6imi8xYhBJzH.qtWEyWrc8QY4r8DaWs4BJs4VbYHHr9AXeUqZIEKAN4EnHpPYFgc_s&x-id=UploadPart",
-        //"PartNumber": 11
-      //},
-      //{
-        //"signedUrl": "https://danoph-image-resizer.s3.us-east-1.amazonaws.com/MediumTestFile?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAUB7YTG2OKMURE6FP%2F20221130%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20221130T213248Z&X-Amz-Expires=3600&X-Amz-Signature=651f22e6a5800533feb7025c879a0f6929426a06f05ccfd2d84317cb8041b4bd&X-Amz-SignedHeaders=host&partNumber=12&uploadId=FDhUkMr8GQX8MkEQADI9mPdJZ_ee9wU_phoXDq2ZkoHevN1pU5aQvJIzTYhFJO6imi8xYhBJzH.qtWEyWrc8QY4r8DaWs4BJs4VbYHHr9AXeUqZIEKAN4EnHpPYFgc_s&x-id=UploadPart",
-        //"PartNumber": 12
-      //},
-      //{
-        //"signedUrl": "https://danoph-image-resizer.s3.us-east-1.amazonaws.com/MediumTestFile?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAUB7YTG2OKMURE6FP%2F20221130%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20221130T213248Z&X-Amz-Expires=3600&X-Amz-Signature=36f0d5a8c43284d626616e8c018ed3531b6a1a7ac26549faaa6abb5c1d04d5bb&X-Amz-SignedHeaders=host&partNumber=13&uploadId=FDhUkMr8GQX8MkEQADI9mPdJZ_ee9wU_phoXDq2ZkoHevN1pU5aQvJIzTYhFJO6imi8xYhBJzH.qtWEyWrc8QY4r8DaWs4BJs4VbYHHr9AXeUqZIEKAN4EnHpPYFgc_s&x-id=UploadPart",
-        //"PartNumber": 13
-      //},
-      //{
-        //"signedUrl": "https://danoph-image-resizer.s3.us-east-1.amazonaws.com/MediumTestFile?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAUB7YTG2OKMURE6FP%2F20221130%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20221130T213248Z&X-Amz-Expires=3600&X-Amz-Signature=bfe64b04b0be6c64fc3abc4ec8daad558bd45939e8354d794fa28e7de99ed144&X-Amz-SignedHeaders=host&partNumber=14&uploadId=FDhUkMr8GQX8MkEQADI9mPdJZ_ee9wU_phoXDq2ZkoHevN1pU5aQvJIzTYhFJO6imi8xYhBJzH.qtWEyWrc8QY4r8DaWs4BJs4VbYHHr9AXeUqZIEKAN4EnHpPYFgc_s&x-id=UploadPart",
-        //"PartNumber": 14
-      //},
-      //{
-        //"signedUrl": "https://danoph-image-resizer.s3.us-east-1.amazonaws.com/MediumTestFile?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAUB7YTG2OKMURE6FP%2F20221130%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20221130T213248Z&X-Amz-Expires=3600&X-Amz-Signature=2e0ce694ff4c7c1f70d98bffa8a2f1fe523fd5a79263384ae2633d1762b0120f&X-Amz-SignedHeaders=host&partNumber=15&uploadId=FDhUkMr8GQX8MkEQADI9mPdJZ_ee9wU_phoXDq2ZkoHevN1pU5aQvJIzTYhFJO6imi8xYhBJzH.qtWEyWrc8QY4r8DaWs4BJs4VbYHHr9AXeUqZIEKAN4EnHpPYFgc_s&x-id=UploadPart",
-        //"PartNumber": 15
-      //},
-      //{
-        //"signedUrl": "https://danoph-image-resizer.s3.us-east-1.amazonaws.com/MediumTestFile?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAUB7YTG2OKMURE6FP%2F20221130%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20221130T213248Z&X-Amz-Expires=3600&X-Amz-Signature=6f165634b3ecdff49ec955f91199bce1f49e70f82d45349502a10f547e849024&X-Amz-SignedHeaders=host&partNumber=16&uploadId=FDhUkMr8GQX8MkEQADI9mPdJZ_ee9wU_phoXDq2ZkoHevN1pU5aQvJIzTYhFJO6imi8xYhBJzH.qtWEyWrc8QY4r8DaWs4BJs4VbYHHr9AXeUqZIEKAN4EnHpPYFgc_s&x-id=UploadPart",
-        //"PartNumber": 16
-      //},
-      //{
-        //"signedUrl": "https://danoph-image-resizer.s3.us-east-1.amazonaws.com/MediumTestFile?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAUB7YTG2OKMURE6FP%2F20221130%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20221130T213248Z&X-Amz-Expires=3600&X-Amz-Signature=116553eb77654b98d44645ca172926ce7c30e5181d7bbc28b677058cd96a08ba&X-Amz-SignedHeaders=host&partNumber=17&uploadId=FDhUkMr8GQX8MkEQADI9mPdJZ_ee9wU_phoXDq2ZkoHevN1pU5aQvJIzTYhFJO6imi8xYhBJzH.qtWEyWrc8QY4r8DaWs4BJs4VbYHHr9AXeUqZIEKAN4EnHpPYFgc_s&x-id=UploadPart",
-        //"PartNumber": 17
-      //},
-      //{
-        //"signedUrl": "https://danoph-image-resizer.s3.us-east-1.amazonaws.com/MediumTestFile?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAUB7YTG2OKMURE6FP%2F20221130%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20221130T213248Z&X-Amz-Expires=3600&X-Amz-Signature=2334d97b836319bd7c2b80819d377e2ebd4e6b0095652ada74fb0a5e86e98361&X-Amz-SignedHeaders=host&partNumber=18&uploadId=FDhUkMr8GQX8MkEQADI9mPdJZ_ee9wU_phoXDq2ZkoHevN1pU5aQvJIzTYhFJO6imi8xYhBJzH.qtWEyWrc8QY4r8DaWs4BJs4VbYHHr9AXeUqZIEKAN4EnHpPYFgc_s&x-id=UploadPart",
-        //"PartNumber": 18
-      //},
-      //{
-        //"signedUrl": "https://danoph-image-resizer.s3.us-east-1.amazonaws.com/MediumTestFile?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAUB7YTG2OKMURE6FP%2F20221130%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20221130T213248Z&X-Amz-Expires=3600&X-Amz-Signature=be82074483976d5ca850ab149da9d228310a08350e6d3d5421b76bc56938e9b0&X-Amz-SignedHeaders=host&partNumber=19&uploadId=FDhUkMr8GQX8MkEQADI9mPdJZ_ee9wU_phoXDq2ZkoHevN1pU5aQvJIzTYhFJO6imi8xYhBJzH.qtWEyWrc8QY4r8DaWs4BJs4VbYHHr9AXeUqZIEKAN4EnHpPYFgc_s&x-id=UploadPart",
-        //"PartNumber": 19
-      //},
-      //{
-        //"signedUrl": "https://danoph-image-resizer.s3.us-east-1.amazonaws.com/MediumTestFile?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAUB7YTG2OKMURE6FP%2F20221130%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20221130T213248Z&X-Amz-Expires=3600&X-Amz-Signature=c17edee9961a44728c4392e5b8c9fc13404b53f1a5cedf6a39c6b2a9b75b7cc8&X-Amz-SignedHeaders=host&partNumber=20&uploadId=FDhUkMr8GQX8MkEQADI9mPdJZ_ee9wU_phoXDq2ZkoHevN1pU5aQvJIzTYhFJO6imi8xYhBJzH.qtWEyWrc8QY4r8DaWs4BJs4VbYHHr9AXeUqZIEKAN4EnHpPYFgc_s&x-id=UploadPart",
-        //"PartNumber": 20
-      //}
-    //]
-  //};
-
-  //useEffect(() => {
-    //if (file) {
-      let percentage = undefined
-
-      const videoUploaderOptions = {
-        fileName: file.name,
-        file: file,
+    uploader
+    .onProgress(({ percentage: newPercentage }) => {
+      // to avoid the same percentage to be logged twice
+      if (newPercentage !== uploadProgress) {
+        setUploadProgress(newPercentage);
+        console.log(`${newPercentage}%`)
       }
+    })
+    .onError((error) => {
+      setFile(undefined)
+      console.error('SOME ERROR CAUGHT!', error)
+    })
 
-      const uploader = new Uploader(videoUploaderOptions)
-      setUploader(uploader)
-
-      uploader
-      .onProgress(({ percentage: newPercentage }) => {
-        // to avoid the same percentage to be logged twice
-        if (newPercentage !== percentage) {
-          percentage = newPercentage
-          console.log(`${percentage}%`)
-        }
-      })
-      .onError((error) => {
-        setFile(undefined)
-        console.error('SOME ERROR CAUGHT!', error)
-      })
-
-      uploader.start();
+    uploader.start();
   }
-  //}, [file])
 
   const onCancel = () => {
     if (uploader) {
@@ -690,26 +527,32 @@ export default function Example() {
                     ))}
                   </ul>
 
-                  <label htmlFor="file-upload" className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
-                    <span>Upload a file</span>
-                    <input
-                      id="file-upload"
-                      name="files"
-                      type="file"
-                      onChange={fileAdded}
-                      value={inputValue}
-                    />
-                  </label>
+                  <div>
+                    <UploadProgressBar progress={uploadProgress} />
 
-                  <div className="pt-5">
-                    <div className="flex">
-                      <button
-                        type="button"
-                        onClick={uploadClicked}
-                        className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                      >
-                        Upload
-                      </button>
+                    <div className="pt-5">
+                      <label htmlFor="file-upload" className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                        <span>Upload a file</span>
+                        <input
+                          id="file-upload"
+                          name="files"
+                          type="file"
+                          onChange={fileAdded}
+                          value={inputValue}
+                        />
+                      </label>
+                    </div>
+
+                    <div className="pt-5">
+                      <div className="flex">
+                        <button
+                          type="button"
+                          onClick={uploadClicked}
+                          className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                        >
+                          Upload
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </section>
