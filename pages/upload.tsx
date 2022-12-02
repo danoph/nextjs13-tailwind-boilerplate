@@ -159,8 +159,8 @@ export default function Example() {
     uploader
     .onProgress(({ percentage: newPercentage }) => {
       // to avoid the same percentage to be logged twice
+      setUploadProgress(newPercentage);
       if (newPercentage !== uploadProgress) {
-        setUploadProgress(newPercentage);
         console.log(`${newPercentage}%`)
       }
     })
